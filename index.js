@@ -25,7 +25,7 @@ var defaults = {
 var ignoreNextComment = 'px-to-viewport-ignore-next';
 var ignorePrevComment = 'px-to-viewport-ignore';
 
-module.exports = postcss.plugin('postcss-px-to-viewport', function (options) {
+module.exports = function (options) {
   var opts = objectAssign({}, defaults, options);
 
   checkRegExpOrArray(opts, 'exclude');
@@ -35,8 +35,9 @@ module.exports = postcss.plugin('postcss-px-to-viewport', function (options) {
   var satisfyPropList = createPropListMatcher(opts.propList);
   var landscapeRules = [];
 
-  return function (css, result) {
-    css.walkRules(function (rule) {
+  return {
+    postcssPlugin: 'postcss-px-to-vw',
+    Once(css, { result }) {
       // Add exclude option to ignore some files like 'node_modules'
       var file = rule.source && rule.source.input.file;
 
@@ -65,84 +66,89 @@ module.exports = postcss.plugin('postcss-px-to-viewport', function (options) {
         }
       }
 
-      if (blacklistedSelector(opts.selectorBlackList, rule.selector)) return;
+      css.walkRules(function (rule) {
+        if (blacklistedSelector(opts.selectorBlackList, rule.selector)) return;
 
-      if (opts.landscape && !rule.parent.params) {
-        var landscapeRule = rule.clone().removeAll();
+        if (opts.landscape && !rule.parent.params) {
+          var landscapeRule = rule.clone().removeAll();
 
-        rule.walkDecls(function(decl) {
-          if (decl.value.indexOf(opts.unitToConvert) === -1) return;
-          if (!satisfyPropList(decl.prop)) return;
+          rule.walkDecls(function (decl) {
+            if (decl.value.indexOf(opts.unitToConvert) === -1) return;
+            if (!satisfyPropList(decl.prop)) return;
 
-          landscapeRule.append(decl.clone({
-            value: decl.value.replace(pxRegex, createPxReplace(opts, opts.landscapeUnit, opts.landscapeWidth))
-          }));
-        });
+            landscapeRule.append(decl.clone({
+              value: decl.value.replace(pxRegex, createPxReplace(opts, opts.landscapeUnit, opts.landscapeWidth))
+            }));
+          });
 
-        if (landscapeRule.nodes.length > 0) {
-          landscapeRules.push(landscapeRule);
-        }
-      }
-
-      if (!validateParams(rule.parent.params, opts.mediaQuery)) return;
-
-      rule.walkDecls(function(decl, i) {
-        if (decl.value.indexOf(opts.unitToConvert) === -1) return;
-        if (!satisfyPropList(decl.prop)) return;
-
-        var prev = decl.prev();
-        // prev declaration is ignore conversion comment at same line
-        if (prev && prev.type === 'comment' && prev.text === ignoreNextComment) {
-          // remove comment
-          prev.remove();
-          return;
-        }
-        var next = decl.next();
-        // next declaration is ignore conversion comment at same line
-        if (next && next.type === 'comment' && next.text === ignorePrevComment) {
-          if (/\n/.test(next.raws.before)) {
-            result.warn('Unexpected comment /* ' + ignorePrevComment + ' */ must be after declaration at same line.', { node: next });
-          } else {
-            // remove comment
-            next.remove();
-            return;
+          if (landscapeRule.nodes.length > 0) {
+            landscapeRules.push(landscapeRule);
           }
         }
 
-        var unit;
-        var size;
-        var params = rule.parent.params;
+        if (!validateParams(rule.parent.params, opts.mediaQuery)) return;
 
-        if (opts.landscape && params && params.indexOf('landscape') !== -1) {
-          unit = opts.landscapeUnit;
-          size = opts.landscapeWidth;
-        } else {
-          unit = getUnit(decl.prop, opts);
-          size = opts.viewportWidth;
-        }
+        rule.walkDecls(function (decl, i) {
+          if (decl.value.indexOf(opts.unitToConvert) === -1) return;
+          if (!satisfyPropList(decl.prop)) return;
 
-        var value = decl.value.replace(pxRegex, createPxReplace(opts, unit, size));
+          var prev = decl.prev();
+          // prev declaration is ignore conversion comment at same line
+          if (prev && prev.type === 'comment' && prev.text === ignoreNextComment) {
+            // remove comment
+            prev.remove();
+            return;
+          }
+          var next = decl.next();
+          // next declaration is ignore conversion comment at same line
+          if (next && next.type === 'comment' && next.text === ignorePrevComment) {
+            if (/\n/.test(next.raws.before)) {
+              result.warn('Unexpected comment /* ' + ignorePrevComment + ' */ must be after declaration at same line.', { node: next });
+            } else {
+              // remove comment
+              next.remove();
+              return;
+            }
+          }
 
-        if (declarationExists(decl.parent, decl.prop, value)) return;
+          var unit;
+          var size;
+          var params = rule.parent.params;
 
-        if (opts.replace) {
-          decl.value = value;
-        } else {
-          decl.parent.insertAfter(i, decl.clone({ value: value }));
-        }
+          if (opts.landscape && params && params.indexOf('landscape') !== -1) {
+            unit = opts.landscapeUnit;
+            size = opts.landscapeWidth;
+          } else {
+            unit = getUnit(decl.prop, opts);
+            size =
+              typeof opts.viewportWidth === 'function'
+                ? opts.viewportWidth({ file, selector: rule.selector })
+                : opts.viewportWidth;
+          }
+
+          var value = decl.value.replace(pxRegex, createPxReplace(opts, unit, size));
+
+          if (declarationExists(decl.parent, decl.prop, value)) return;
+
+          if (opts.replace) {
+            decl.value = value;
+          } else {
+            decl.parent.insertAfter(i, decl.clone({ value: value }));
+          }
+        });
       });
-    });
 
-    if (landscapeRules.length > 0) {
-      var landscapeRoot = new postcss.atRule({ params: '(orientation: landscape)', name: 'media' });
+      if (landscapeRules.length > 0) {
+        var landscapeRoot = new postcss.atRule({ params: '(orientation: landscape)', name: 'media' });
 
-      landscapeRules.forEach(function(rule) {
-        landscapeRoot.append(rule);
-      });
-      css.append(landscapeRoot);
-    }
-  };
-});
+        landscapeRules.forEach(function (rule) {
+          landscapeRoot.append(rule);
+        });
+        css.append(landscapeRoot);
+      }
+    },
+  }
+};
 
 function getUnit(prop, opts) {
   return prop.indexOf('font') === -1 ? opts.viewportUnit : opts.fontViewportUnit;
@@ -195,7 +201,7 @@ function blacklistedSelector(blacklist, selector) {
 
 function declarationExists(decls, prop, value) {
   return decls.some(function (decl) {
-      return (decl.prop === prop && decl.value === value);
+    return (decl.prop === prop && decl.value === value);
   });
 }
 
