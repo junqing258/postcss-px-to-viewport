@@ -1,8 +1,6 @@
 # postcss-px-to-viewport
 [![NPM version](https://badge.fury.io/js/postcss-px-to-viewport.svg)](http://badge.fury.io/js/postcss-px-to-viewport)
 
-[English](README.md) | 中文
-
 将px单位转换为视口单位的 (vw, vh, vmin, vmax) 的 [PostCSS](https://github.com/postcss/postcss) 插件.
 
 ## 简介
