@@ -1,14 +1,13 @@
 'use strict';
 
 var postcss = require('postcss');
-var objectAssign = require('object-assign');
 var { createPropListMatcher } = require('./src/prop-list-matcher');
 var { getUnitRegexp } = require('./src/pixel-unit-regexp');
 
 var defaults = {
   unitToConvert: 'px',
-  viewportWidth: 320,
-  viewportHeight: 568, // not now used; TODO: need for different units and math for different properties
+  viewportWidth: 375,
+  viewportHeight: 812, // not now used; TODO: need for different units and math for different properties
   unitPrecision: 5,
   viewportUnit: 'vw',
   fontViewportUnit: 'vw',  // vmin is more suitable.
@@ -19,14 +18,14 @@ var defaults = {
   replace: true,
   landscape: false,
   landscapeUnit: 'vw',
-  landscapeWidth: 568
+  landscapeWidth: 812
 };
 
 var ignoreNextComment = 'px-to-viewport-ignore-next';
 var ignorePrevComment = 'px-to-viewport-ignore';
 
 module.exports = function (options) {
-  var opts = objectAssign({}, defaults, options);
+  var opts = Object.assign({}, defaults, options);
 
   checkRegExpOrArray(opts, 'exclude');
   checkRegExpOrArray(opts, 'include');
@@ -39,7 +38,7 @@ module.exports = function (options) {
     postcssPlugin: 'postcss-px-to-vw',
     Once(css, { result }) {
       // Add exclude option to ignore some files like 'node_modules'
-      var file = rule.source && rule.source.input.file;
+      var file = css.source.input.file
 
       if (opts.include && file) {
         if (Object.prototype.toString.call(opts.include) === '[object RegExp]') {
@@ -139,7 +138,7 @@ module.exports = function (options) {
       });
 
       if (landscapeRules.length > 0) {
-        var landscapeRoot = new postcss.atRule({ params: '(orientation: landscape)', name: 'media' });
+        var landscapeRoot = new postcss.AtRule({ params: '(orientation: landscape)', name: 'media' });
 
         landscapeRules.forEach(function (rule) {
           landscapeRoot.append(rule);
