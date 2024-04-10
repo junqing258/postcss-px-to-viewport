@@ -1,11 +1,20 @@
 # postcss-px-to-viewport
-[![NPM version](https://badge.fury.io/js/postcss-px-to-viewport.svg)](http://badge.fury.io/js/postcss-px-to-viewport)
+[![NPM version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&r=r&ts=1683906897&type=6e&v=1.1.2)](http://badge.fury.io/js/postcss-px-to-viewport)
+
+
 
 将px单位转换为视口单位的 (vw, vh, vmin, vmax) 的 [PostCSS](https://github.com/postcss/postcss) 插件.
 
 ## 简介
 
 如果你的样式需要做根据视口大小来调整宽度，这个脚本可以将你CSS中的px单位转化为vw，1vw等于1/100视口宽度。
+
+处理了[postcss-px-to-viewport](http://badge.fury.io/js/postcss-px-to-viewport)，警告信息：
+```bash
+postcss-px-to-viewport: postcss.plugin was deprecated. Migration guide:
+https://evilmartians.com/chronicles/postcss-8-plugin-migration
+```
+
 
 ### 输入
 
@@ -85,7 +94,7 @@ $ yarn add -D postcss-px-to-viewport
 ```js
 {
   unitToConvert: 'px',
-  viewportWidth: 320,
+  viewportWidth: 375,
   unitPrecision: 5,
   propList: ['*'],
   viewportUnit: 'vw',
@@ -103,6 +112,17 @@ $ yarn add -D postcss-px-to-viewport
 ```
 - `unitToConvert` (String) 需要转换的单位，默认为"px"
 - `viewportWidth` (Number|Function) 设计稿的视口宽度, 同时支持函数
+  ```js
+  {
+    // 使用函数配置
+    viewportWidth({ file, selector }) {
+      if (file && file.indexOf('vant') > -1) {
+        return 375;
+      }
+      return 750;
+    }
+  }
+  ```
 - `unitPrecision` (Number) 单位转换后保留的精度
 - `propList` (Array) 能转化为vw的属性列表
   - 传入特定的CSS属性；
