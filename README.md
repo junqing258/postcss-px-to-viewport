@@ -153,11 +153,11 @@ $ yarn add -D postcss-px-to-viewport
 
 > `exclude`和`include`是可以一起设置的，将取两者规则的交集。
 
-#### Ignoring (需要翻译帮助。)
+#### Ignoring
 
-You can use special comments for ignore conversion of single lines:
-- `/* px-to-viewport-ignore-next */` — on a separate line, prevents conversion on the next line.
-- `/* px-to-viewport-ignore */` — after the property on the right, prevents conversion on the same line.
+可以使用特殊注释来忽略单行转换:
+- `/* px-to-viewport-ignore-next */` — 在单独的行上，阻止在下一行上进行转换。
+- `/* px-to-viewport-ignore */` — 在属性后，阻止在同一行上进行转换。
 
 Example:
 ```css
@@ -179,7 +179,7 @@ Example:
 }
 ```
 
-There are several more reasons why your pixels may not convert, the following options may affect this:
+像素无法转换还有几个原因，以下选项可能会影响到这一点:
 `propList`, `selectorBlackList`, `minPixelValue`, `mediaQuery`, `exclude`, `include`.
 
 #### 使用PostCss配置文件时
@@ -254,14 +254,6 @@ $ npm run test
 
 本项目使用 [MIT License](LICENSE).
 
-## 赞助商
-
-访问 [Evrone](https://evrone.com/)网站以获取有关[项目构建](https://evrone.com/cases)的更多信息。
-
-<a href="https://evrone.com/?utm_source=postcss-px-to-viewport">
-  <img src="https://user-images.githubusercontent.com/417688/34437029-dbfe4ee6-ecab-11e7-9d80-2b274b4149b3.png"
-       alt="Sponsored by Evrone" width="231" />
-</a>
 
 ## 借鉴自
 
