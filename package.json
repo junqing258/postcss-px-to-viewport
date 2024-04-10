@@ -7,6 +7,10 @@
     "type": "git",
     "url": "git@github.com:junqing258/postcss-px-to-viewport.git"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "homepage": "https://github.com/junqing258/postcss-px-to-vw-next?tab=readme-ov-file#postcss-px-to-viewport",
   "main": "index.js",
   "keywords": [
@@ -25,8 +29,7 @@
   "scripts": {
     "test": "jest spec/*.spec.js"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "jest": "^25.4.0",
     "postcss": ">=8.0.0"
